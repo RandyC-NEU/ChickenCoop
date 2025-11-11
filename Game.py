@@ -3,8 +3,14 @@ from Ui import Button
 from Entities import Land, Coop, Chicken
 from Camera import Camera, grid_to_world
 import pygame
+from enum import Enum
+import random
 
 class Game:
+    class GameState(Enum):
+        PLAYING = 1
+        PAUSED = 2
+
     def __init__(self):
         self.screen = pygame.display.set_mode((ScreenDimensions.SCREEN_WIDTH, ScreenDimensions.SCREEN_HEIGHT))
         pygame.display.set_caption("Chicken Coop Tycoon")
@@ -14,13 +20,9 @@ class Game:
         self.font_small = pygame.font.Font(None, 18)
 
         self.state = None
-        from enum import Enum
-        class GameState(Enum):
-            PLAYING = 1
-            PAUSED = 2
-        self.GameState = GameState
         self.state = self.GameState.PLAYING
         self.running = True
+        self.blight_active = False
 
         # Game variables
         self.money = 500.0
@@ -32,15 +34,15 @@ class Game:
         self.pan_speed = Camera.PAN_SPEED
 
         # initialize map
-        self.setup_lands()
+        self.setup_initial_plot()
 
         # create camera (centered on map centroid)
-        # camera is set in setup_lands
+        # camera is set in setup_initial_plot
 
         # Create UI buttons
         self.setup_buttons()
 
-    def setup_lands(self):
+    def setup_initial_plot(self):
         cols = 4
         rows = 3
         # create logical lands (store row/col)
@@ -54,10 +56,7 @@ class Game:
             wx, wy = grid_to_world(land.row, land.col)
             wxs.append(wx)
             wys.append(wy)
-        if wxs:
-            self.camera = Camera(x=sum(wxs) / len(wxs), y=sum(wys) / len(wys), zoom=1.0)
-        else:
-            self.camera = Camera()
+        self.camera = Camera(x=sum(wxs) / len(wxs), y=sum(wys) / len(wys), zoom=1.0)
 
     def setup_buttons(self):
         button_y = 20
@@ -70,10 +69,16 @@ class Game:
             'buy_chicken': Button(button_x, button_y + 100, button_width, button_height, f"Buy Chicken ${GameConstants.GameEconomyConstants.CHICKEN_COST}", Color.YELLOW, Color.BLACK),
             'sell_eggs': Button(button_x, button_y + 150, button_width, button_height, "Sell All Eggs", Color.GREEN, Color.WHITE),
         }
+        self.blight_buttons = {
+            'buy_blight_cure': Button(button_x, button_y + 220, button_width, button_height, "Buy Blight Cure $200", Color.RED, Color.WHITE),
+            'cull_blighted_chickens': Button(button_x, button_y + 270, button_width, button_height, "Cull Blighted Chickens", Color.RED, Color.WHITE)
+        }
 
     def handle_events(self):
         mouse_pos = pygame.mouse.get_pos()
         for button in self.buttons.values():
+            button.update_hover(mouse_pos)
+        for button in self.blight_buttons.values():
             button.update_hover(mouse_pos)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -98,6 +103,16 @@ class Game:
                 self.buy_chicken()
         elif self.buttons['sell_eggs'].is_clicked(mouse_pos):
             self.sell_eggs()
+        elif self.blight_buttons['buy_blight_cure'].is_clicked(mouse_pos):
+            if self.blight_active and self.money >= 200:
+                self.money -= 200
+                self.blight_active = False
+        elif self.blight_buttons['cull_blighted_chickens'].is_clicked(mouse_pos):
+            if self.blight_active:
+                for land in self.lands:
+                    if land.coop:
+                        land.coop.chickens = []
+                self.blight_active = False
         else:
             # Convert screen→world and select land
             world_mouse = self.camera.screen_to_world(mouse_pos)
@@ -118,20 +133,20 @@ class Game:
     def buy_coop(self):
         if not self.selected_land:
             return
-        if self.money >= GameConstants.GameEconomyConstants.COOP_COST and not self.selected_land.structure:
+        if self.money >= GameConstants.GameEconomyConstants.COOP_COST and not self.selected_land.coop:
             self.money -= GameConstants.GameEconomyConstants.COOP_COST
-            self.selected_land.structure = Coop([])
+            self.selected_land.coop = Coop()
 
     def buy_chicken(self):
         if not self.selected_land:
             return
-        if self.money >= GameConstants.GameEconomyConstants.CHICKEN_COST and self.selected_land.structure:
+        if self.money >= GameConstants.GameEconomyConstants.CHICKEN_COST and self.selected_land.coop:
             import random
             tile_w = GameConstants.LAND_SIZE
             tile_h = GameConstants.LAND_SIZE // 2
             off_x = random.uniform(-tile_w * 0.25, tile_w * 0.25)
             off_y = random.uniform(0, tile_h * 0.4)
-            self.selected_land.structure.chickens.append(Chicken(off_x, off_y))
+            self.selected_land.coop.chickens.append(Chicken(off_x, off_y))
             self.money -= GameConstants.GameEconomyConstants.CHICKEN_COST
 
     def sell_eggs(self):
@@ -139,6 +154,15 @@ class Game:
             money_earned = self.total_eggs * GameConstants.GameEconomyConstants.EGG_SELL_PRICE
             self.money += money_earned
             self.total_eggs = 0
+
+    def calculate_blight_chance(self, dt):
+        if self.blight_active:
+            return
+        # Simple chance: 1% chance every 10 seconds, scaled by number of chickens (more chickens = higher chance)
+        chance_per_second = 0.001 * sum(len(land.coop.chickens) for land in self.lands if land.coop)
+        chance_this_frame = chance_per_second * dt
+        if random.random() < chance_this_frame:
+            self.blight_active = True
 
     def update(self, dt):
         if self.state == self.GameState.PAUSED:
@@ -161,11 +185,13 @@ class Game:
 
         self.game_time += dt
         for land in self.lands:
-            if land.structure:
-                production_rate = land.structure.get_total_production_rate()
+            if land.coop:
+                production_rate = land.coop.get_total_production_rate(self.blight_active)
                 eggs_produced = production_rate * dt
-                land.structure.eggs_produced += eggs_produced
+                land.coop.eggs_produced += eggs_produced
                 self.total_eggs += eggs_produced
+
+        self.calculate_blight_chance(dt)
 
     def draw(self):
         self.screen.fill(Color.LIGHT_BROWN)
@@ -177,6 +203,10 @@ class Game:
         pygame.draw.rect(self.screen, Color.GRAY, (ScreenDimensions.SCREEN_WIDTH - 180, 0, 180, ScreenDimensions.SCREEN_HEIGHT))
         for button in self.buttons.values():
             button.draw(self.screen, self.font_small)
+        if self.blight_active:
+            for button in self.blight_buttons.values():
+                button.draw(self.screen, self.font_small)
+
 
         money_text = self.font_medium.render(f"Money: ${self.money:.2f}", True, Color.YELLOW)
         self.screen.blit(money_text, (ScreenDimensions.SCREEN_WIDTH - 170, ScreenDimensions.SCREEN_HEIGHT - 150))
@@ -184,10 +214,14 @@ class Game:
         self.screen.blit(eggs_text, (ScreenDimensions.SCREEN_WIDTH - 170, ScreenDimensions.SCREEN_HEIGHT - 110))
         time_text = self.font_small.render(f"Time: {self.game_time:.1f}s", True, Color.WHITE)
         self.screen.blit(time_text, (ScreenDimensions.SCREEN_WIDTH - 170, ScreenDimensions.SCREEN_HEIGHT - 70))
+
+        if self.blight_active:
+            blight_text = self.font_medium.render("BLIGHT ACTIVE!", True, Color.RED)
+            self.screen.blit(blight_text, (ScreenDimensions.SCREEN_WIDTH - 170, ScreenDimensions.SCREEN_HEIGHT - 200))
         if self.selected_land:
             info = "Selected"
-            if self.selected_land.structure:
-                chickens = len(self.selected_land.structure.chickens)
+            if self.selected_land.coop:
+                chickens = len(self.selected_land.coop.chickens)
                 info += f" Coop ({chickens}🐔)"
             else:
                 info += " (empty)"

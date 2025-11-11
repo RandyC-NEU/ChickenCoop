@@ -7,10 +7,11 @@ import pygame
 @dataclass
 class Chicken:
     """Represents a single chicken with an offset relative to its coop's world position."""
-    offset_x: float
-    offset_y: float
-    eggs_produced: float = 0.0
-    
+    def __init__(self, offset_x: float, offset_y: float):
+        self.offset_x: float = offset_x
+        self.offset_y: float = offset_y
+        self.eggs_produced: float = 0.0
+
     def draw(self, screen, world_x, world_y, camera: Camera):
         # compute screen position from coop world pos + offset
         wx = world_x + self.offset_x
@@ -45,12 +46,17 @@ class Chicken:
 @dataclass
 class Coop:
     """Represents a chicken coop (logical entity). Drawn by passing world coordinates and camera."""
-    chickens: List[Chicken]
-    eggs_produced: float = 0.0
+    def __init__(self):
+        self.chickens: List[Chicken] = []
+        self.eggs_produced: float = 0.0
 
     def draw(self, screen, world_x, world_y, camera: Camera):
         # compute screen pos for center
-        cx, cy = camera.world_to_screen((world_x, world_y))
+        # offset coop upward in world space so it sits on top of the land tile
+        tile_h = GameConstants.LAND_SIZE // 2
+        # shift up by half the tile height so coop bottom aligns with tile's lower point
+        coop_world_y = world_y - tile_h * 0.5
+        cx, cy = camera.world_to_screen((world_x, coop_world_y))
         half = GameConstants.COOP_SIZE // 2
         # roof/top (small diamond)
         roof_h = 16
@@ -102,21 +108,21 @@ class Coop:
         for chicken in self.chickens:
             chicken.draw(screen, world_x, world_y, camera)
 
-    def get_total_production_rate(self):
+    def get_total_production_rate(self, blight_active: bool):
         """Calculate total eggs produced per second"""
-        return GameConstants.GameEconomyConstants.COOP_PRODUCTION_RATE + (len(self.chickens) * GameConstants.GameEconomyConstants.CHICKEN_PRODUCTION_RATE)
+        return (GameConstants.GameEconomyConstants.BLIGHT_PENALTY if blight_active else 1) * (len(self.chickens) * GameConstants.GameEconomyConstants.CHICKEN_PRODUCTION_RATE)
 
 
 @dataclass
 class Land:
     """Represents a plot of land that can hold coops"""
-    x: float
-    y: float
-    row: int = 0
-    col: int = 0
-    has_structure: bool = False
-    structure: Coop = None
-    is_selected: bool = False
+    def __init__(self, x, y, row=0, col=0):
+        self.x: float = x
+        self.y: float = y
+        self.row: int = row
+        self.col: int = col
+        self.coop: Coop = None
+        self.is_selected: bool = False
 
     def draw(self, screen, camera: Camera):
         # Draw isometric diamond tile centered at grid world position
@@ -143,8 +149,8 @@ class Land:
         pygame.draw.polygon(screen, border_color, points, border_width)
 
         # Draw structure if present (pass world coords so Coop can draw chickens via camera)
-        if self.structure:
-            self.structure.draw(screen, world_x, world_y, camera)
+        if self.coop:
+            self.coop.draw(screen, world_x, world_y, camera)
 
     def contains_point(self, world_point):
         """Check whether a world-space point (wx,wy) is inside this diamond tile's world area."""

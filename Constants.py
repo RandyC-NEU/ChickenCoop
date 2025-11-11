@@ -32,10 +32,5 @@ class GameConstants:
         LAND_COST = 150
         EGG_SELL_PRICE = 5
         # Production rates (eggs per second)
-        COOP_PRODUCTION_RATE = 0.5  # Half an egg per second
         CHICKEN_PRODUCTION_RATE = 0.3  # Chickens produce less than coops
-
-
-
-
-#pygame.init()
+        BLIGHT_PENALTY = -0.5  # Production penalty during blight
