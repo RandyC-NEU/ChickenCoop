@@ -53,14 +53,6 @@ python main.py
 | **Click "Sell All Eggs"** | Sell all eggs for money |
 | **SPACE** | Pause/Resume the game |
 
-### Classes
-
-- **Game**: Main game loop and state management
-- **Button**: UI button with hover and click detection
-- **Land**: Land plot that can contain a coop
-- **Coop**: Chicken coop that houses chickens and produces eggs
-- **Chicken**: Individual chicken entity
-
 ## Future Enhancement Ideas
 
 - Save/load game progress
