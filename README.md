@@ -1,4 +1,4 @@
-# 🐔 Chicken Coop Tycoon
+# Chicken Coop Tycoon 🐔 
 
 A pygame-based farm tycoon game where you build and manage chicken coops, care for chickens, and sell eggs to grow your farm empire!
 
@@ -104,29 +104,6 @@ python main.py
 - **Land**: Land plot that can contain a coop
 - **Coop**: Chicken coop that houses chickens and produces eggs
 - **Chicken**: Individual chicken entity
-
-### Game Constants
-
-```python
-COOP_COST = 100
-CHICKEN_COST = 30
-LAND_COST = 150
-EGG_SELL_PRICE = 5
-
-COOP_PRODUCTION_RATE = 0.5 eggs/second
-CHICKEN_PRODUCTION_RATE = 0.3 eggs/second
-```
-
-## Troubleshooting
-
-**Issue**: "ModuleNotFoundError: No module named 'pygame'"
-- **Solution**: Run `pip install pygame`
-
-**Issue**: Game runs but displays are small
-- **Solution**: Screen is 1200x800. Adjust SCREEN_WIDTH and SCREEN_HEIGHT in main.py if needed
-
-**Issue**: Game is running slow
-- **Solution**: Close other applications, ensure your system meets minimum requirements
 
 ## Future Enhancement Ideas
 
