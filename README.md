@@ -61,10 +61,11 @@ python main.py
    - Coops produce 0.5 eggs per second (even empty)
    - Each chicken adds 0.3 eggs per second to their coop
 6. **Selling Eggs**: Each egg sells for $5
+7. **Beware the Blight!!**: Too many chickens in a coop may trigger a plague, watch out for coop population
 
 ### Strategy Tips
 
-- **Early Game**: Buy a coop first to start egg production
+- **Early Game**: Buy a coop first to house chickens
 - **Scaling**: Add chickens to increase production rate
 - **Investment**: Balance between buying new land and stocking existing coops
 - **Passive Income**: Let your farm produce eggs while you wait
