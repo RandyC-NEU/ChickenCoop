@@ -71,22 +71,6 @@ python main.py
 - **Passive Income**: Let your farm produce eggs while you wait
 - **Planning**: Think ahead about which coops to expand
 
-## Game Elements
-
-### Visual Components
-
-- **Green Squares**: Empty land plots
-- **Brown Buildings with Red Roofs**: Chicken coops
-- **Orange Circles**: Chickens
-- **Gray Panel (right side)**: UI with buttons and status
-
-### Displayed Information
-
-- Current money balance
-- Total eggs collected
-- Game time elapsed
-- Pause state
-
 ## Example Progression
 
 1. Start with $500
@@ -94,8 +78,6 @@ python main.py
 3. Buy 2 chickens ($60) → Now have $340 and 2.1 eggs/second production
 4. After ~30 seconds: Collect ~60 eggs = $300 in sales
 5. Use profits to expand: Buy more land, more coops, more chickens
-
-## Technical Details
 
 ### Classes
 
