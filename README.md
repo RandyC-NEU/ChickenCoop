@@ -6,16 +6,6 @@ A pygame-based farm tycoon game where you build and manage chicken coops, care f
 
 Build your chicken farm from the ground up! Purchase land, build coops, buy chickens, and manage egg production to maximize profits. Similar to FarmVille, this idle/management game rewards strategic planning and resource management.
 
-## Features
-
-- **Land Management**: Buy land plots to expand your farm
-- **Coop Building**: Construct chicken coops on your land
-- **Chicken Care**: Purchase chickens to populate your coops
-- **Egg Production**: Coops and chickens automatically produce eggs over time
-- **Economy System**: Sell eggs for money to invest in more structures
-- **Real-time Production**: Watch your farm generate income while you play
-- **Pause Mechanism**: Press SPACE to pause/resume the game
-
 ## Installation
 
 ### Prerequisites
@@ -41,16 +31,6 @@ pip install -r requirements.txt
 python main.py
 ```
 
-### Game Controls
-
-| Control | Action |
-|---------|--------|
-| **Click "Buy Land"** | Purchase a new land plot |
-| **Click "Buy Coop"** | Place a chicken coop on empty land |
-| **Click "Buy Chicken"** | Add a chicken to an existing coop |
-| **Click "Sell All Eggs"** | Sell all eggs for money |
-| **SPACE** | Pause/Resume the game |
-
 ### Gameplay Mechanics
 
 1. **Starting Capital**: You begin with $500
@@ -63,21 +43,15 @@ python main.py
 6. **Selling Eggs**: Each egg sells for $5
 7. **Beware the Blight!!**: Too many chickens in a coop may trigger a plague, watch out for coop population
 
-### Strategy Tips
+### Game Controls
 
-- **Early Game**: Buy a coop first to house chickens
-- **Scaling**: Add chickens to increase production rate
-- **Investment**: Balance between buying new land and stocking existing coops
-- **Passive Income**: Let your farm produce eggs while you wait
-- **Planning**: Think ahead about which coops to expand
-
-## Example Progression
-
-1. Start with $500
-2. Buy a coop ($100) → Now have $400 and 1 coop producing eggs
-3. Buy 2 chickens ($60) → Now have $340 and 2.1 eggs/second production
-4. After ~30 seconds: Collect ~60 eggs = $300 in sales
-5. Use profits to expand: Buy more land, more coops, more chickens
+| Control | Action |
+|---------|--------|
+| **Click "Buy Land"** | Purchase a new land plot |
+| **Click "Buy Coop"** | Place a chicken coop on empty land |
+| **Click "Buy Chicken"** | Add a chicken to an existing coop |
+| **Click "Sell All Eggs"** | Sell all eggs for money |
+| **SPACE** | Pause/Resume the game |
 
 ### Classes
 
