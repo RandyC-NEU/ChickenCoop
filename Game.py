@@ -4,6 +4,7 @@ from Entities import Land, Coop, Chicken
 from Camera import Camera, grid_to_world
 import pygame
 from enum import Enum
+from typing import List
 import random
 
 class Game:
@@ -22,12 +23,11 @@ class Game:
         self.state = None
         self.state = self.GameState.PLAYING
         self.running = True
-        self.blight_active = False
 
         # Game variables
         self.money = 500.0
         self.total_eggs = 0.0
-        self.lands = []
+        self.lands: List[Land] = []
         self.game_time = 0.0
         self.selected_land = None
         # camera pan speed (world units/sec)
@@ -104,15 +104,17 @@ class Game:
         elif self.buttons['sell_eggs'].is_clicked(mouse_pos):
             self.sell_eggs()
         elif self.blight_buttons['buy_blight_cure'].is_clicked(mouse_pos):
-            if self.blight_active and self.money >= 200:
+            if any(land.coop.has_blight() for land in self.lands if land.coop) and self.money >= 200:
                 self.money -= 200
-                self.blight_active = False
-        elif self.blight_buttons['cull_blighted_chickens'].is_clicked(mouse_pos):
-            if self.blight_active:
                 for land in self.lands:
                     if land.coop:
-                        land.coop.chickens = []
-                self.blight_active = False
+                        land.coop.blight_active = False
+        elif self.blight_buttons['cull_blighted_chickens'].is_clicked(mouse_pos):
+            if any(land.coop.has_blight() for land in self.lands if land.coop):
+                for land in self.lands:
+                    if land.coop:
+                        land.coop.chickens.clear()
+                        land.coop.blight_active = False
         else:
             # Convert screen→world and select land
             world_mouse = self.camera.screen_to_world(mouse_pos)
@@ -141,7 +143,6 @@ class Game:
         if not self.selected_land:
             return
         if self.money >= GameConstants.GameEconomyConstants.CHICKEN_COST and self.selected_land.coop:
-            import random
             tile_w = GameConstants.LAND_SIZE
             tile_h = GameConstants.LAND_SIZE // 2
             off_x = random.uniform(-tile_w * 0.25, tile_w * 0.25)
@@ -154,15 +155,6 @@ class Game:
             money_earned = self.total_eggs * GameConstants.GameEconomyConstants.EGG_SELL_PRICE
             self.money += money_earned
             self.total_eggs = 0
-
-    def calculate_blight_chance(self, dt):
-        if self.blight_active:
-            return
-        # Simple chance: 1% chance every 10 seconds, scaled by number of chickens (more chickens = higher chance)
-        chance_per_second = 0.001 * sum(len(land.coop.chickens) for land in self.lands if land.coop)
-        chance_this_frame = chance_per_second * dt
-        if random.random() < chance_this_frame:
-            self.blight_active = True
 
     def update(self, dt):
         if self.state == self.GameState.PAUSED:
@@ -186,12 +178,11 @@ class Game:
         self.game_time += dt
         for land in self.lands:
             if land.coop:
-                production_rate = land.coop.get_total_production_rate(self.blight_active)
+                land.coop.calculate_blight_chance(dt)
+                production_rate = land.coop.get_total_production_rate()
                 eggs_produced = production_rate * dt
                 land.coop.eggs_produced += eggs_produced
                 self.total_eggs += eggs_produced
-
-        self.calculate_blight_chance(dt)
 
     def draw(self):
         self.screen.fill(Color.LIGHT_BROWN)
@@ -203,7 +194,7 @@ class Game:
         pygame.draw.rect(self.screen, Color.GRAY, (ScreenDimensions.SCREEN_WIDTH - 180, 0, 180, ScreenDimensions.SCREEN_HEIGHT))
         for button in self.buttons.values():
             button.draw(self.screen, self.font_small)
-        if self.blight_active:
+        if any(land.coop.has_blight() for land in self.lands if land.coop):
             for button in self.blight_buttons.values():
                 button.draw(self.screen, self.font_small)
 
@@ -215,7 +206,7 @@ class Game:
         time_text = self.font_small.render(f"Time: {self.game_time:.1f}s", True, Color.WHITE)
         self.screen.blit(time_text, (ScreenDimensions.SCREEN_WIDTH - 170, ScreenDimensions.SCREEN_HEIGHT - 70))
 
-        if self.blight_active:
+        if any(land.coop.has_blight() for land in self.lands if land.coop):
             blight_text = self.font_medium.render("BLIGHT ACTIVE!", True, Color.RED)
             self.screen.blit(blight_text, (ScreenDimensions.SCREEN_WIDTH - 170, ScreenDimensions.SCREEN_HEIGHT - 200))
         if self.selected_land:

@@ -15,6 +15,7 @@ class Color:
     BROWN = (139, 69, 19)
     TAN = (210, 180, 140)
     LIGHT_BROWN = (160, 82, 45)
+    DARK_BROWN = (120, 60, 30)
     GRAY = (128, 128, 128)
     LIGHT_GRAY = (200, 200, 200)
     ORANGE = (255, 165, 0)
@@ -22,9 +23,9 @@ class Color:
 # Game constants
 class GameConstants:
     """General game constants."""
-    COOP_SIZE = 60
+    COOP_SIZE = 40
     CHICKEN_SIZE = 20
-    LAND_SIZE = 80
+    LAND_SIZE = 100
     class GameEconomyConstants:
         """Game economy related constants."""
         COOP_COST = 100

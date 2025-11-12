@@ -5,7 +5,7 @@ class Camera:
     # Camera pan speed (world units per second)
     PAN_SPEED = 400
 
-    def __init__(self, x=0.0, y=0.0, zoom=1.0, ui_width=200):
+    def __init__(self, x=0.0, y=0.0, zoom=2.0, ui_width=200):
         self.x = x
         self.y = y
         self.zoom = zoom

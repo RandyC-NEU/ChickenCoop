@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import List
 from Constants import GameConstants, Color
 from Camera import Camera, grid_to_world
+import random
 import pygame
 
 @dataclass
@@ -48,6 +49,7 @@ class Coop:
     """Represents a chicken coop (logical entity). Drawn by passing world coordinates and camera."""
     def __init__(self):
         self.chickens: List[Chicken] = []
+        self.blight_active = False
         self.eggs_produced: float = 0.0
 
     def draw(self, screen, world_x, world_y, camera: Camera):
@@ -76,7 +78,7 @@ class Coop:
             (cx + half, cy + half),
             (cx - half, cy + half)
         ]
-        pygame.draw.polygon(screen, (120, 60, 30), front_points)
+        pygame.draw.polygon(screen, Color.GREEN if self.blight_active else Color.DARK_BROWN, front_points)
 
         # side face (lighter)
         side_points = [
@@ -85,7 +87,7 @@ class Coop:
             (cx, cy + half + 4),
             (cx + half, cy + half)
         ]
-        pygame.draw.polygon(screen, Color.TAN, side_points)
+        pygame.draw.polygon(screen, Color.DARK_GREEN if self.blight_active else Color.TAN, side_points)
 
         # # door as a trapezoid on the front face
         # front_top_y = cy - half + roof_h
@@ -108,9 +110,22 @@ class Coop:
         for chicken in self.chickens:
             chicken.draw(screen, world_x, world_y, camera)
 
-    def get_total_production_rate(self, blight_active: bool):
+    def has_blight(self):
+        """Check if any chicken in this coop has blight"""
+        return self.blight_active
+
+    def calculate_blight_chance(self, dt):
+        if self.blight_active:
+            return
+        # Simple chance: 10% chance every 10 seconds, scaled by number of chickens (more chickens = higher chance)
+        chance_per_second = 0.01 * len(self.chickens)
+        chance_this_frame = chance_per_second * dt
+        if random.random() < chance_this_frame:
+            self.blight_active = True
+
+    def get_total_production_rate(self):
         """Calculate total eggs produced per second"""
-        return (GameConstants.GameEconomyConstants.BLIGHT_PENALTY if blight_active else 1) * (len(self.chickens) * GameConstants.GameEconomyConstants.CHICKEN_PRODUCTION_RATE)
+        return (GameConstants.GameEconomyConstants.BLIGHT_PENALTY if self.blight_active else 1) * (len(self.chickens) * GameConstants.GameEconomyConstants.CHICKEN_PRODUCTION_RATE)
 
 
 @dataclass
