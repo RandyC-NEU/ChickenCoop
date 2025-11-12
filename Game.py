@@ -2,6 +2,7 @@ from Constants import ScreenDimensions, GameConstants, Color
 from Ui import Button
 from Entities import Land, Coop, Chicken
 from Camera import Camera, grid_to_world
+from Lighting import LightingSystem, VignetteEffect
 import pygame
 from enum import Enum
 from typing import List
@@ -32,6 +33,10 @@ class Game:
         self.selected_land = None
         # camera pan speed (world units/sec)
         self.pan_speed = Camera.PAN_SPEED
+
+        # Initialize lighting system
+        self.lighting_system = LightingSystem()
+        self.vignette_effect = VignetteEffect(ScreenDimensions.SCREEN_WIDTH, ScreenDimensions.SCREEN_HEIGHT)
 
         # initialize map
         self.setup_initial_plot()
@@ -176,6 +181,8 @@ class Game:
         self.camera.y += dy
 
         self.game_time += dt
+        self.lighting_system.update(self.game_time)
+        
         for land in self.lands:
             if land.coop:
                 land.coop.calculate_blight_chance(dt)
@@ -190,6 +197,10 @@ class Game:
             land.is_selected = (land is self.selected_land)
         for land in sorted(self.lands, key=lambda l: (l.row + l.col)):
             land.draw(self.screen, self.camera)
+
+        # Apply lighting tint and vignette
+        self.lighting_system.apply_tint_to_screen(self.screen)
+        self.vignette_effect.apply_vignette(self.screen)
 
         pygame.draw.rect(self.screen, Color.GRAY, (ScreenDimensions.SCREEN_WIDTH - 180, 0, 180, ScreenDimensions.SCREEN_HEIGHT))
         for button in self.buttons.values():

@@ -35,3 +35,21 @@ class GameConstants:
         # Production rates (eggs per second)
         CHICKEN_PRODUCTION_RATE = 0.3  # Chickens produce less than coops
         BLIGHT_PENALTY = -0.5  # Production penalty during blight
+
+class LightingConstants:
+    """Lighting and visual effect constants."""
+    # Shadow parameters
+    SHADOW_ALPHA = 80  # Transparency of shadows (0-255)
+    SHADOW_BLUR = 2    # How blurred/soft shadows appear
+    
+    # Day cycle parameters (in game seconds)
+    DAY_CYCLE_LENGTH = 60.0  # Full day cycle duration
+    
+    # Lighting color presets for different times of day
+    MORNING_TINT = (255, 200, 150)    # Warm golden light
+    MIDDAY_TINT = (255, 255, 255)     # Neutral white light
+    EVENING_TINT = (255, 150, 100)    # Warm orange light
+    NIGHT_TINT = (100, 150, 200)      # Cool blue light
+    
+    # Vignette effect
+    VIGNETTE_STRENGTH = 0.3  # How dark edges get (0-1)

@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import List
 from Constants import GameConstants, Color
 from Camera import Camera, grid_to_world
+from Lighting import ShadowManager
 import random
 import pygame
 
@@ -22,6 +23,10 @@ class Chicken:
         body_w = int(GameConstants.CHICKEN_SIZE * 1.6)
         body_h = int(GameConstants.CHICKEN_SIZE * 1.0)
         body_rect = pygame.Rect(cx - body_w // 2, cy - body_h // 2, body_w, body_h)
+        
+        # Draw shadow beneath chicken
+        ShadowManager.draw_shadow(screen, cx, cy, body_w, body_h, offset_y=4)
+        
         pygame.draw.ellipse(screen, Color.ORANGE, body_rect)
         # subtle highlight
         highlight_rect = pygame.Rect(body_rect.x + body_w // 6, body_rect.y + body_h // 8, body_w // 2, body_h // 2)
@@ -38,10 +43,6 @@ class Chicken:
             (head_x + 10, head_y + 3),
             (head_x + 6, head_y + 4)
         ])
-
-        # small shadow under chicken
-        shadow_rect = pygame.Rect(cx - body_w // 3, cy + body_h // 2, body_w // 1, max(3, body_h // 6))
-        pygame.draw.ellipse(screen, (50, 30, 20), shadow_rect)
 
 
 @dataclass
@@ -60,6 +61,10 @@ class Coop:
         coop_world_y = world_y - tile_h * 0.5
         cx, cy = camera.world_to_screen((world_x, coop_world_y))
         half = GameConstants.COOP_SIZE // 2
+        
+        # Draw shadow beneath coop
+        ShadowManager.draw_shadow(screen, cx, cy, GameConstants.COOP_SIZE * 1.2, GameConstants.COOP_SIZE // 2, offset_y=8)
+        
         # roof/top (small diamond)
         roof_h = 16
         roof_points = [
