@@ -12,6 +12,7 @@ class Color:
     LIGHT_GREEN = (144, 238, 144)
     RED = (220, 20, 60)
     YELLOW = (255, 215, 0)
+    BLUE = (30, 144, 255)
     BROWN = (139, 69, 19)
     TAN = (210, 180, 140)
     LIGHT_BROWN = (160, 82, 45)
@@ -26,15 +27,43 @@ class GameConstants:
     COOP_SIZE = 40
     CHICKEN_SIZE = 20
     LAND_SIZE = 100
+    BLIGHT_CHANCE = 0.002  # Base chance per second for blight to occur in a coop
+    
+    class CoopTypes:
+        """Different coop types with different properties."""
+        CLASSIC = {
+            "name": "Classic Coop",
+            "capacity": 10,  # Max chickens
+            "blight_multiplier": 1.0,  # Blight chance multiplier
+            "land_slots": 1,  # Number of land tiles occupied
+            "cost": 100,
+        }
+        DELUXE = {
+            "name": "Deluxe Coop",
+            "capacity": 20,  # Higher capacity
+            "blight_multiplier": 0.5,  # Lower blight chance (50% of normal)
+            "land_slots": 2,  # Occupies 2 land tiles
+            "cost": 200,
+        }
+    
     class GameEconomyConstants:
         """Game economy related constants."""
         COOP_COST = 100
         CHICKEN_COST = 30
         LAND_COST = 150
         EGG_SELL_PRICE = 5
+        FEED_COST = 40  # Cost per feed bag
         # Production rates (eggs per second)
         CHICKEN_PRODUCTION_RATE = 0.3  # Chickens produce less than coops
         BLIGHT_PENALTY = -0.5  # Production penalty during blight
+    
+    class FeedConstants:
+        """Feed and starvation mechanics."""
+        INITIAL_FEED_LEVEL = 100.0  # Starting feed % (0-100)
+        FEED_CAPACITY = 100.0  # Max feed level
+        FEED_CONSUMPTION_RATE = 5.0  # Feed % consumed per chicken per minute
+        STARVATION_THRESHOLD = 10.0  # Feed % below which chickens start dying
+        STARVATION_DEATH_RATE = 0.1  # Chickens killed per second when starving (per chicken)
 
 class LightingConstants:
     """Lighting and visual effect constants."""
